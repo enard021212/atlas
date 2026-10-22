@@ -3,159 +3,178 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<meta name="theme-color" content="#060a10">
+<meta name="theme-color" content="#04060c">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="ATLAS">
 <title>ATLAS</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@500;600;700&family=IBM+Plex+Sans:wght@400;500&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Josefin+Sans:wght@300;400;600&family=Manrope:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap">
 <style>
+/* Layout: pantalla única — cabecera mínima, orbe centrado con subtítulos vivos, barra inferior; panel de mensajes deslizable. Oscuro único, azul + oro. */
 :root{
-  --void:#060a10; --panel:#0f1724; --panel2:#152033; --line:#24344b; --ink:#e6eef8; --dim:#9db0c7;
-  --core:#4fd6e8; --ember:#f5ab5e; --rose:#ff7a9a; --ok:#6fe3a8;
-  --f-display:"Chakra Petch","Segoe UI",system-ui,sans-serif;
-  --f-body:"IBM Plex Sans",system-ui,-apple-system,sans-serif;
-  --f-mono:"IBM Plex Mono",ui-monospace,Menlo,monospace;
+  --void:#04060c; --deep:#0a1120; --glass:rgba(16,26,46,.62); --line:rgba(150,180,230,.14); --line2:rgba(217,180,106,.28);
+  --ink:#eaf0fa; --dim:#8d9ab2; --blue:#3f8cff; --ice:#a9cdff; --gold:#d8b26a; --gold2:#f4d999; --rose:#ff8fa3;
+  --f-display:"Josefin Sans","Avenir Next","Segoe UI",system-ui,sans-serif;
+  --f-body:"Manrope",system-ui,-apple-system,sans-serif;
+  --f-mono:"JetBrains Mono",ui-monospace,Menlo,monospace;
+  --ease:cubic-bezier(.22,.8,.24,1);
   color-scheme:dark;
 }
 *{box-sizing:border-box}
 [hidden]{display:none!important}
 html,body{height:100%;margin:0}
-body{background:var(--void);color:var(--ink);font-family:var(--f-body);font-size:16px;line-height:1.5;
-  background-image:radial-gradient(ellipse 90% 45% at 50% 18%,rgba(79,214,232,.10),transparent 70%);
+body{background:var(--void);color:var(--ink);font-family:var(--f-body);font-size:16px;line-height:1.55;overflow:hidden;
   padding-top:env(safe-area-inset-top,0px);-webkit-tap-highlight-color:transparent;overscroll-behavior:none}
-.app{height:100%;display:flex;flex-direction:column;max-width:640px;margin:0 auto;
-  padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+body::before{content:"";position:fixed;inset:0;pointer-events:none;
+  background:radial-gradient(60% 40% at 50% 38%,rgba(63,140,255,.16),transparent 70%),radial-gradient(40% 30% at 50% 100%,rgba(216,178,106,.07),transparent 70%)}
+.app{position:relative;height:100%;display:flex;flex-direction:column;max-width:560px;margin:0 auto;
+  padding-left:max(18px,env(safe-area-inset-left,0px));padding-right:max(18px,env(safe-area-inset-right,0px))}
 
-/* Barra superior */
-.top{display:flex;align-items:center;gap:8px;padding-block:14px 4px}
-.top h1{font-family:var(--f-display);font-weight:700;font-size:22px;letter-spacing:.22em;margin:0;line-height:1}
+/* Cabecera */
+.top{display:flex;align-items:center;gap:10px;padding-block:14px 0}
+.mark{font-family:var(--f-display);font-weight:300;font-size:20px;letter-spacing:.55em;color:var(--gold2);margin:0;line-height:1;padding-top:3px;
+  text-shadow:0 0 18px rgba(244,217,153,.35)}
 .top .sp{flex:1}
-.pill{font-family:var(--f-mono);font-size:12px;letter-spacing:.06em;text-transform:uppercase;
-  background:var(--panel);color:var(--ink);border:1px solid var(--line);border-radius:999px;padding:8px 12px;cursor:pointer;display:inline-flex;align-items:center;gap:6px}
-.pill .led{width:8px;height:8px;border-radius:50%;background:var(--dim)}
-.pill[aria-pressed="true"] .led{background:var(--ok);box-shadow:0 0 8px var(--ok)}
-.icon{width:38px;height:38px;padding:0;justify-content:center}
-.icon svg{width:18px;height:18px}
-.meta{display:flex;justify-content:space-between;font-family:var(--f-mono);font-size:12px;letter-spacing:.1em;text-transform:uppercase;color:var(--dim);padding-bottom:4px}
-.meta b{font-weight:500;color:var(--core)}
-.meta.warn b{color:var(--ember)}
+.clock{font-family:var(--f-mono);font-size:12px;letter-spacing:.08em;color:var(--dim)}
+.ib{width:40px;height:40px;display:inline-grid;place-items:center;border-radius:50%;border:1px solid var(--line);background:var(--glass);color:var(--ink);cursor:pointer;
+  transition:border-color .3s var(--ease),color .3s var(--ease),background .3s var(--ease);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px)}
+.ib svg{width:18px;height:18px}
+.ib:hover{border-color:var(--line2);color:var(--gold2)}
 
-/* Núcleo */
-.stage{display:flex;flex-direction:column;align-items:center;gap:12px;padding-block:18px 16px}
-.core{position:relative;width:min(58vw,210px);aspect-ratio:1;max-width:100%;border:none;background:transparent;padding:0;cursor:pointer;border-radius:50%;--c:var(--core);transition:transform .15s}
-.core:active{transform:scale(.96)}
-.core span{position:absolute;border-radius:50%;pointer-events:none}
-.core .glow{inset:-12%;background:radial-gradient(circle,color-mix(in srgb,var(--c) 28%,transparent) 0%,transparent 65%);animation:breathe 4s ease-in-out infinite}
-.core .r1{inset:0;border:2px dashed var(--c);opacity:.55;animation:spin 20s linear infinite}
-.core .r2{inset:9%;border:3px solid;border-color:var(--c) transparent var(--c) transparent;animation:spin 7s linear infinite reverse}
-.core .r3{inset:20%;border:1px solid var(--c);opacity:.35}
-.core .r4{inset:27%;background:radial-gradient(circle,#f2fdff 0%,var(--c) 42%,color-mix(in srgb,var(--c) 20%,transparent) 70%,transparent 72%);animation:pulse 3.2s ease-in-out infinite}
-.core .mic{left:50%;top:50%;width:22%;height:22%;transform:translate(-50%,-50%);border-radius:0}
-.core .mic svg{width:100%;height:100%;display:block}
-.core[data-s="listening"]{--c:var(--rose)}
-.core[data-s="listening"] .r4{animation-duration:.7s}
-.core[data-s="listening"] .r2{animation-duration:1.4s}
-.core[data-s="thinking"]{--c:var(--ember)}
-.core[data-s="thinking"] .r2{animation-duration:.9s}
-.core[data-s="speaking"] .r4{animation-duration:.5s}
-@keyframes spin{to{transform:rotate(360deg)}}
-@keyframes pulse{50%{transform:scale(.84);opacity:.8}}
-@keyframes breathe{50%{opacity:.55}}
-.label{font-family:var(--f-display);font-weight:600;font-size:17px;letter-spacing:.06em;color:var(--ink);text-align:center;min-height:24px}
-.sub{font-size:14px;color:var(--dim);text-align:center;min-height:21px;max-width:34ch}
-.bars{display:flex;gap:4px;height:18px;align-items:center}
-.bars i{width:4px;border-radius:2px;background:var(--rose);animation:bar .9s ease-in-out infinite}
-.bars i:nth-child(2){animation-delay:.15s}.bars i:nth-child(3){animation-delay:.3s}.bars i:nth-child(4){animation-delay:.45s}.bars i:nth-child(5){animation-delay:.6s}
-@keyframes bar{0%,100%{height:4px}50%{height:18px}}
+/* Escenario */
+.stage{flex:1;min-height:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px}
+.orbwrap{position:relative;width:min(78vw,330px,46vh);aspect-ratio:1;max-width:100%}
+#orb{position:absolute;inset:0;width:100%;height:100%;cursor:pointer;border-radius:50%;touch-action:manipulation}
+#orb:focus-visible{outline:2px solid var(--gold);outline-offset:4px}
+.state{display:flex;align-items:center;gap:10px;font-family:var(--f-display);font-weight:400;font-size:13px;letter-spacing:.38em;text-transform:uppercase;color:var(--ice);
+  transition:color .5s var(--ease);margin-top:4px;padding-left:.38em}
+.state .dot{width:6px;height:6px;border-radius:50%;background:currentColor;box-shadow:0 0 10px currentColor;transition:background .5s}
+.app[data-s="listening"] .state{color:var(--gold2)}
+.app[data-s="listening"] .state .dot{animation:blink 1s ease-in-out infinite}
+.app[data-s="thinking"] .state{color:var(--gold)}
+.app[data-s="speaking"] .state{color:var(--ice)}
+@keyframes blink{50%{opacity:.25}}
+.caption{width:100%;max-width:30ch;min-height:5.2em;max-height:9.6em;overflow-y:auto;text-align:center;font-size:18px;line-height:1.6;font-weight:500;color:var(--ink);
+  padding-inline:4px;margin-top:10px;scrollbar-width:none;mask-image:linear-gradient(transparent,#000 14%,#000 100%);-webkit-mask-image:linear-gradient(transparent,#000 14%,#000 100%)}
+.caption::-webkit-scrollbar{display:none}
+.caption .you{display:block;font-size:14px;font-weight:400;color:var(--dim);margin-bottom:6px;font-style:italic}
+.caption .w{display:inline;animation:rise .55s var(--ease) both}
+@keyframes rise{from{opacity:0;filter:blur(4px)}to{opacity:1;filter:blur(0)}}
+.hint{font-size:13px;color:var(--dim);letter-spacing:.04em}
 
-/* Conversación */
-.log{flex:1;overflow-y:auto;display:flex;flex-direction:column;gap:14px;padding-block:14px;min-height:0;border-top:1px solid var(--line);-webkit-overflow-scrolling:touch}
-.msg{max-width:90%;min-width:0;overflow-wrap:anywhere}
-.msg .who{font-family:var(--f-mono);font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--dim);margin-bottom:4px}
-.msg.ai .who{color:var(--core)}
-.msg.ai .body{border-left:2px solid var(--core);padding:2px 0 2px 12px;white-space:pre-wrap}
+/* Barra inferior */
+.bar{display:flex;align-items:center;justify-content:center;gap:12px;padding-block:10px max(14px,env(safe-area-inset-bottom,0px))}
+.chip{display:inline-flex;align-items:center;gap:8px;min-height:42px;padding:0 16px;border-radius:999px;border:1px solid var(--line);background:var(--glass);color:var(--ink);
+  font-family:var(--f-body);font-weight:500;font-size:14px;cursor:pointer;backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);transition:border-color .3s var(--ease),color .3s}
+.chip svg{width:16px;height:16px}
+.chip .led{width:7px;height:7px;border-radius:50%;background:var(--dim);transition:background .3s,box-shadow .3s}
+.chip[aria-pressed="true"] .led{background:var(--gold2);box-shadow:0 0 8px var(--gold2)}
+.chip:hover{border-color:var(--line2)}
+.count{font-family:var(--f-mono);font-size:11px;color:var(--gold2)}
+button:focus-visible,input:focus-visible{outline:2px solid var(--gold);outline-offset:3px}
+
+/* Panel de mensajes */
+.scrim{position:fixed;inset:0;background:rgba(2,3,7,.55);opacity:0;pointer-events:none;transition:opacity .4s var(--ease);z-index:20}
+.scrim.on{opacity:1;pointer-events:auto}
+.panel{position:fixed;left:0;right:0;bottom:0;margin:0 auto;max-width:560px;height:min(78%,640px);z-index:21;display:flex;flex-direction:column;
+  background:linear-gradient(180deg,rgba(14,22,40,.96),rgba(7,11,20,.98));border:1px solid var(--line);border-bottom:none;border-radius:24px 24px 0 0;
+  box-shadow:0 -20px 60px rgba(0,0,0,.5),inset 0 1px 0 rgba(244,217,153,.12);transform:translateY(105%);transition:transform .5s var(--ease);
+  padding:10px max(18px,env(safe-area-inset-right,0px)) max(12px,env(safe-area-inset-bottom,0px)) max(18px,env(safe-area-inset-left,0px))}
+.panel.on{transform:none}
+.grab{width:42px;height:4px;border-radius:2px;background:var(--line);margin:0 auto 12px}
+.phead{display:flex;align-items:flex-end;gap:12px;padding-bottom:12px;border-bottom:1px solid var(--line)}
+.bigtime{font-family:var(--f-display);font-weight:300;font-size:44px;line-height:1;color:var(--gold2);letter-spacing:.04em;font-variant-numeric:tabular-nums}
+.bigdate{font-size:13px;color:var(--dim);padding-bottom:5px}
+.bigdate::first-letter{text-transform:uppercase}
+.phead .sp{flex:1}
+.log{flex:1;min-height:0;overflow-y:auto;display:flex;flex-direction:column;gap:14px;padding-block:16px;-webkit-overflow-scrolling:touch}
+.msg{max-width:88%;min-width:0;overflow-wrap:anywhere;animation:rise .4s var(--ease) both}
+.msg .who{font-family:var(--f-mono);font-size:10.5px;letter-spacing:.16em;text-transform:uppercase;color:var(--dim);margin-bottom:4px}
+.msg .who time{opacity:.7;margin-left:6px;letter-spacing:.04em}
+.msg.ai .who{color:var(--gold)}
+.msg.ai .body{padding-left:12px;border-left:1px solid var(--line2);white-space:pre-wrap;font-size:15px}
 .msg.me{align-self:flex-end}
 .msg.me .who{text-align:right}
-.msg.me .body{background:var(--panel2);border:1px solid var(--line);border-radius:14px 14px 3px 14px;padding:9px 13px;white-space:pre-wrap}
-.msg.err .body{border-left-color:var(--ember);color:var(--ember)}
-form{display:flex;gap:8px;padding-block:8px max(12px,env(safe-area-inset-bottom,0px))}
-input[type=text],input[type=password]{flex:1;min-width:0;font:inherit;font-size:16px;color:var(--ink);background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:12px 14px}
-input::placeholder{color:#6f8299}
-input:focus{outline:none;border-color:var(--core)}
-.btn{flex:none;padding:0 18px;min-height:46px;border:none;border-radius:12px;background:var(--core);color:var(--void);font-family:var(--f-display);font-weight:700;font-size:15px;letter-spacing:.05em;cursor:pointer}
-.btn.ghost{background:transparent;color:var(--ink);border:1px solid var(--line)}
-.btn.danger{background:transparent;color:var(--ember);border:1px solid color-mix(in srgb,var(--ember) 45%,transparent)}
-button:focus-visible,input:focus-visible{outline:2px solid var(--ember);outline-offset:2px}
+.msg.me .body{background:rgba(63,140,255,.12);border:1px solid rgba(63,140,255,.25);border-radius:16px 16px 4px 16px;padding:9px 14px;white-space:pre-wrap;font-size:15px}
+.msg.err .body{color:var(--rose);border-left-color:var(--rose)}
+.empty{color:var(--dim);font-size:14px;text-align:center;margin:auto 0}
+form{display:flex;gap:8px;padding-top:10px;border-top:1px solid var(--line)}
+input[type=text],input[type=password]{flex:1;min-width:0;font:inherit;font-size:16px;color:var(--ink);background:rgba(4,6,12,.7);border:1px solid var(--line);border-radius:14px;padding:12px 14px;transition:border-color .3s}
+input::placeholder{color:#66738a}
+input:focus{outline:none;border-color:var(--gold)}
+.btn{flex:none;min-height:46px;padding:0 18px;border:none;border-radius:14px;cursor:pointer;font-family:var(--f-body);font-weight:600;font-size:15px;
+  color:#1a1206;background:linear-gradient(180deg,var(--gold2),var(--gold));box-shadow:0 4px 18px rgba(216,178,106,.25)}
+.btn.ghost{background:transparent;color:var(--ink);border:1px solid var(--line);box-shadow:none}
+.btn.danger{background:transparent;color:var(--rose);border:1px solid rgba(255,143,163,.35);box-shadow:none}
 
 /* Ajustes */
-.sheet{position:fixed;inset:0;background:rgba(2,4,8,.78);backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px);display:flex;align-items:flex-end;justify-content:center;z-index:20}
-.card{position:relative;width:100%;max-width:520px;background:var(--panel);border:1px solid var(--line);border-bottom:none;border-radius:20px 20px 0 0;display:flex;flex-direction:column;gap:14px;
-  padding:22px max(20px,env(safe-area-inset-right,0px)) max(22px,env(safe-area-inset-bottom,0px)) max(20px,env(safe-area-inset-left,0px));animation:up .22s ease-out}
-@keyframes up{from{transform:translateY(30px);opacity:0}}
-.card h2{font-family:var(--f-display);font-size:21px;letter-spacing:.06em;margin:0;padding-right:44px}
+.sheet{position:fixed;inset:0;z-index:30;display:flex;align-items:flex-end;justify-content:center;background:rgba(2,3,7,.7);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);animation:fade .3s var(--ease)}
+@keyframes fade{from{opacity:0}}
+.card{position:relative;width:100%;max-width:520px;display:flex;flex-direction:column;gap:14px;background:linear-gradient(180deg,#111b30,#090e1a);border:1px solid var(--line);border-bottom:none;border-radius:24px 24px 0 0;
+  padding:24px max(20px,env(safe-area-inset-right,0px)) max(22px,env(safe-area-inset-bottom,0px)) max(20px,env(safe-area-inset-left,0px));animation:up .45s var(--ease)}
+@keyframes up{from{transform:translateY(40px);opacity:0}}
+.card h2{margin:0;font-family:var(--f-display);font-weight:400;font-size:20px;letter-spacing:.2em;text-transform:uppercase;color:var(--gold2);padding-right:48px}
 .card p{margin:0;color:var(--dim);font-size:14.5px}
-.card .row{display:flex;gap:8px}
-.card .row .btn{flex:1}
-.x{position:absolute;top:14px;right:14px}
-.keybox{display:flex;align-items:center;gap:10px;background:var(--void);border:1px solid var(--line);border-radius:12px;padding:12px 14px;font-family:var(--f-mono);font-size:14px}
-.keybox .led{width:9px;height:9px;border-radius:50%;background:var(--ok);box-shadow:0 0 8px var(--ok);flex:none}
+.card .row{display:flex;gap:8px}.card .row .btn{flex:1}
+.card .x{position:absolute;top:16px;right:16px}
+.keybox{display:flex;align-items:center;gap:10px;background:rgba(4,6,12,.7);border:1px solid var(--line);border-radius:14px;padding:12px 14px;font-family:var(--f-mono);font-size:14px}
+.keybox .led{width:8px;height:8px;border-radius:50%;background:var(--gold2);box-shadow:0 0 8px var(--gold2);flex:none}
 .keybox span{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.note{font-size:13.5px!important}
-.note.bad{color:var(--ember)!important}
-.card a{color:var(--core)}
-@media (prefers-reduced-motion:reduce){.core span,.bars i{animation:none!important}}
+.note{font-size:13.5px!important}.note.bad{color:var(--rose)!important}
+.card a{color:var(--gold2)}
+@media (prefers-reduced-motion:reduce){*{animation-duration:.01ms!important;transition-duration:.01ms!important}}
 </style>
 </head>
 <body>
-<div class="app">
-  <div class="top">
-    <h1>ATLAS</h1><span class="sp"></span>
-    <button class="pill" id="conv" type="button" aria-pressed="true"><span class="led"></span><span id="convTxt">Charla</span></button>
-    <button class="pill icon" id="clear" type="button" aria-label="Nueva conversación" title="Nueva conversación"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M3 12a9 9 0 1 0 3-6.7L3 8"/><path d="M3 3v5h5"/></svg></button>
-    <button class="pill icon" id="cfg" type="button" aria-label="Ajustes" title="Ajustes"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/></svg></button>
-  </div>
-  <div class="meta" id="meta"><span id="clock">--</span><span><b id="state">En línea</b></span></div>
+<div class="app" id="app" data-s="idle">
+  <header class="top">
+    <h1 class="mark">ATLAS</h1><span class="sp"></span>
+    <span class="clock" id="clock">--:--</span>
+    <button class="ib" id="cfg" type="button" aria-label="Ajustes"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><path d="M4 7h10M18 7h2M4 17h4M12 17h8"/><circle cx="16" cy="7" r="2"/><circle cx="10" cy="17" r="2"/></svg></button>
+  </header>
 
   <section class="stage">
-    <button class="core" id="core" type="button" data-s="idle" aria-label="Pulsa para hablar">
-      <span class="glow"></span><span class="r1"></span><span class="r2"></span><span class="r3"></span><span class="r4"></span>
-      <span class="mic"><svg viewBox="0 0 24 24" fill="none" stroke="#060a10" stroke-width="2.4" stroke-linecap="round"><rect x="9" y="2.5" width="6" height="12" rx="3" fill="#060a10"/><path d="M5.5 11a6.5 6.5 0 0 0 13 0M12 17.5V21"/></svg></span>
-    </button>
-    <div class="label" id="label">Toca para hablar</div>
-    <div class="bars" id="bars" hidden><i></i><i></i><i></i><i></i><i></i></div>
-    <div class="sub" id="sub">Habla en español con naturalidad</div>
+    <div class="orbwrap"><canvas id="orb" tabindex="0" role="button" aria-label="Toca para hablar con Atlas"></canvas></div>
+    <div class="state" id="state"><span class="dot"></span><span id="stateTxt">En espera</span></div>
+    <div class="caption" id="caption" aria-live="polite"></div>
   </section>
 
-  <main class="log" id="log" aria-live="polite"></main>
+  <nav class="bar">
+    <button class="chip" id="openLog" type="button"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a8 8 0 0 1-11.6 7.1L4 20l1.1-4.6A8 8 0 1 1 21 12z"/></svg>Mensajes <span class="count" id="count"></span></button>
+    <button class="chip" id="conv" type="button" aria-pressed="true"><span class="led"></span>Charla continua</button>
+  </nav>
+</div>
+
+<div class="scrim" id="scrim"></div>
+<aside class="panel" id="panel" aria-label="Mensajes" aria-hidden="true">
+  <div class="grab"></div>
+  <div class="phead">
+    <div><div class="bigtime" id="bigtime">--:--</div></div>
+    <div class="bigdate" id="bigdate"></div>
+    <span class="sp"></span>
+    <button class="ib" id="clear" type="button" aria-label="Nueva conversación" title="Nueva conversación"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"><path d="M3 12a9 9 0 1 0 3-6.7L3 8"/><path d="M3 3v5h5"/></svg></button>
+    <button class="ib" id="closeLog" type="button" aria-label="Cerrar mensajes"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M6 9l6 6 6-6"/></svg></button>
+  </div>
+  <div class="log" id="log"><p class="empty" id="empty">Aquí aparecerán vuestras conversaciones.</p></div>
   <form id="form">
-    <input type="text" id="input" placeholder="O escribe aquí…" aria-label="Mensaje para Atlas" autocomplete="off" enterkeyhint="send">
+    <input type="text" id="input" placeholder="Escribe a Atlas…" aria-label="Mensaje para Atlas" autocomplete="off" enterkeyhint="send">
     <button class="btn" type="submit">Enviar</button>
   </form>
-</div>
+</aside>
 
 <div class="sheet" id="sheet" hidden>
   <div class="card" role="dialog" aria-modal="true" aria-labelledby="cfgTitle">
-    <button class="pill icon x" id="closeCfg" type="button" aria-label="Cerrar"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg></button>
-    <h2 id="cfgTitle">Configurar ATLAS</h2>
-
-    <div id="hasKey" hidden>
-      <div class="keybox"><span class="led"></span><span id="keyMask">sk-ant-…</span></div>
-    </div>
+    <button class="ib x" id="closeCfg" type="button" aria-label="Cerrar"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg></button>
+    <h2 id="cfgTitle">Ajustes</h2>
+    <div id="hasKey" hidden><div class="keybox"><span class="led"></span><span id="keyMask"></span></div></div>
     <div id="noKey">
       <p style="margin-bottom:12px">Pega tu clave de API de Anthropic. Se guarda solo en este móvil.</p>
       <input type="password" id="key" placeholder="sk-ant-..." autocomplete="off" aria-label="Clave de API">
     </div>
-
-    <div class="row" id="rowNew">
-      <button class="btn" id="saveKey" type="button">Guardar y empezar</button>
-    </div>
-    <div class="row" id="rowHas" hidden>
-      <button class="btn" id="done" type="button">Listo</button>
-      <button class="btn danger" id="delKey" type="button">Cambiar clave</button>
-    </div>
-    <p class="note" id="cfgMsg">¿No tienes clave? Créala en <a href="https://platform.claude.com/settings/keys" target="_blank" rel="noopener">platform.claude.com</a>.</p>
+    <div class="row" id="rowNew"><button class="btn" id="saveKey" type="button">Guardar y empezar</button></div>
+    <div class="row" id="rowHas" hidden><button class="btn" id="done" type="button">Listo</button><button class="btn danger" id="delKey" type="button">Cambiar clave</button></div>
+    <p class="note" id="cfgMsg"></p>
   </div>
 </div>
 
@@ -164,43 +183,125 @@ const $=id=>document.getElementById(id);
 const MODEL="claude-haiku-5-5";
 const SYSTEM=`Eres ATLAS, una asistente personal de IA (en femenino) con personalidad cálida, elegante, leal y con un toque de humor sutil. Hablas siempre en español, de forma conversacional y natural, como en una llamada: frases cortas, máximo 3-4 frases salvo que te pidan más. Te diriges al usuario como "jefe" con naturalidad, sin exagerar. A menudo terminas con una pregunta breve para que la conversación fluya. Nunca uses markdown, listas, asteriscos ni emojis: todo se leerá en voz alta.`;
 const store={get:k=>{try{return localStorage.getItem(k)}catch(e){return null}},set:(k,v)=>{try{localStorage.setItem(k,v)}catch(e){}},del:k=>{try{localStorage.removeItem(k)}catch(e){}}};
+const reduce=matchMedia("(prefers-reduced-motion: reduce)").matches;
 
 let apiKey=store.get("atlas-key")||"";
 let convMode=store.get("atlas-conv")!=="0";
-let history=[];let state="idle";let abortCtl=null;
+let history=[];let state="idle";let abortCtl=null;let msgCount=0;
 
-/* ---------- Interfaz ---------- */
-const core=$("core"),log=$("log");
-const LABELS={idle:"Toca para hablar",listening:"Te escucho…",thinking:"Pensando…",speaking:"Hablando"};
-const SUBS={idle:"Habla en español con naturalidad",listening:"",thinking:"",speaking:"Toca el núcleo para interrumpir"};
-const STATES={idle:"En línea",listening:"Escuchando",thinking:"Procesando",speaking:"Hablando"};
-function setState(s){state=s;core.dataset.s=s;$("label").textContent=LABELS[s];$("sub").textContent=SUBS[s];$("state").textContent=STATES[s];$("bars").hidden=s!=="listening"}
-function add(role,text,cls){const m=document.createElement("div");m.className="msg "+(cls||role);
-  const w=document.createElement("div");w.className="who";w.textContent=role==="ai"?"Atlas":"Tú";
-  const b=document.createElement("div");b.className="body";b.textContent=text;m.append(w,b);log.append(m);log.scrollTop=log.scrollHeight;return b}
-function tick(){const d=new Date();$("clock").textContent=d.toLocaleDateString("es",{weekday:"short",day:"numeric",month:"short"})+" · "+d.toLocaleTimeString("es",{hour:"2-digit",minute:"2-digit"})}
-tick();setInterval(tick,15000);
-function paintConv(){$("conv").setAttribute("aria-pressed",convMode);$("convTxt").textContent=convMode?"Charla on":"Charla off"}
+/* =============== ORBE (canvas) =============== */
+const cv=$("orb"),ctx=cv.getContext("2d");
+let W=0,DPR=1;
+function sizeOrb(){DPR=Math.min(2,devicePixelRatio||1);W=cv.clientWidth;cv.width=cv.height=Math.round(W*DPR)}
+sizeOrb();addEventListener("resize",sizeOrb);
+let level=0,target=0,hue=0;          // energía del sonido 0..1
+const mix={g:0,t:0,l:0};             // mezcla de color hacia oro / pensar / escuchar
+function kick(v){target=Math.min(1,Math.max(target,v))}
+let t0=performance.now();
+function frame(now){
+  const t=(now-t0)/1000;const sp=reduce?.25:1;
+  // ruido orgánico mientras hay actividad
+  if(state==="listening"&&soundOn)kick(.25+Math.random()*.35);
+  if(state==="speaking"&&TTS&&speechSynthesis.speaking)kick(.2+Math.abs(Math.sin(t*9))*.35*Math.random()+.1);
+  target*=.9;level+=(target-level)*.18;
+  mix.g+=((state==="listening"||state==="thinking"?1:0)-mix.g)*.05;
+  mix.t+=((state==="thinking"?1:0)-mix.t)*.06;
+  mix.l+=((state==="listening"?1:0)-mix.l)*.08;
+
+  const S=W*DPR,c=S/2,R=S/2;ctx.clearRect(0,0,S,S);ctx.globalCompositeOperation="lighter";
+  // halo
+  const halo=ctx.createRadialGradient(c,c,R*.1,c,c,R);
+  halo.addColorStop(0,`rgba(${lerp(63,216,mix.g)},${lerp(140,178,mix.g)},${lerp(255,106,mix.g)},${.22+level*.25})`);
+  halo.addColorStop(.55,`rgba(40,90,200,${.08+level*.08})`);halo.addColorStop(1,"rgba(0,0,0,0)");
+  ctx.fillStyle=halo;ctx.fillRect(0,0,S,S);
+
+  // anillos líquidos
+  const rings=[
+    {k:.56,n:3,s:.6,amp:.022,col:[169,205,255],a:.55,w:1.4},
+    {k:.6,n:4,s:-.45,amp:.03,col:[63,140,255],a:.6,w:1.8},
+    {k:.64,n:5,s:.35,amp:.026,col:[244,217,153],a:.5,w:1.2},
+    {k:.69,n:2,s:-.25,amp:.018,col:[216,178,106],a:.35,w:1}
+  ];
+  for(const [i,rg] of rings.entries()){
+    ctx.beginPath();const amp=R*(rg.amp+level*.07+mix.t*.01);
+    for(let j=0;j<=140;j++){const a=j/140*Math.PI*2;
+      const r=R*(rg.k+level*.05)+amp*Math.sin(a*rg.n+t*rg.s*2*sp+i)+amp*.5*Math.sin(a*(rg.n+3)-t*rg.s*3.1*sp);
+      const x=c+Math.cos(a)*r,y=c+Math.sin(a)*r;j?ctx.lineTo(x,y):ctx.moveTo(x,y)}
+    const g=i<2?mix.g*.6:0;const col=rg.col.map((v,k)=>Math.round(lerp(v,[244,217,153][k],g)));
+    ctx.strokeStyle=`rgba(${col},${rg.a+level*.3})`;ctx.lineWidth=rg.w*DPR;ctx.shadowBlur=14*DPR;ctx.shadowColor=`rgba(${col},.8)`;ctx.stroke()}
+  ctx.shadowBlur=0;
+
+  // núcleo
+  const cr=R*(.36+level*.08+Math.sin(t*1.6*sp)*.012);
+  const core=ctx.createRadialGradient(c-cr*.25,c-cr*.3,cr*.05,c,c,cr);
+  core.addColorStop(0,"rgba(245,250,255,.95)");
+  core.addColorStop(.35,`rgba(${lerp(120,244,mix.g*.5)},${lerp(185,217,mix.g*.5)},255,.75)`);
+  core.addColorStop(.8,`rgba(${lerp(40,150,mix.g*.4)},${lerp(90,110,mix.g*.4)},${lerp(220,120,mix.g*.4)},.35)`);
+  core.addColorStop(1,"rgba(20,40,110,0)");
+  ctx.fillStyle=core;ctx.beginPath();ctx.arc(c,c,cr,0,Math.PI*2);ctx.fill();
+
+  // indicador de escucha: corona de marcas doradas
+  if(mix.l>.01){const N=64;ctx.lineCap="round";
+    for(let j=0;j<N;j++){const a=j/N*Math.PI*2-Math.PI/2;
+      const n=.5+.5*Math.sin(j*1.7+t*7)*Math.sin(j*.6-t*3);
+      const len=R*(.025+level*.09*n+.01)*mix.l;const r0=R*.8;
+      ctx.beginPath();ctx.moveTo(c+Math.cos(a)*r0,c+Math.sin(a)*r0);ctx.lineTo(c+Math.cos(a)*(r0+len),c+Math.sin(a)*(r0+len));
+      ctx.strokeStyle=`rgba(244,217,153,${(.35+level*.6*n)*mix.l})`;ctx.lineWidth=2*DPR;ctx.stroke()}}
+  else{ // anillo de reposo fino
+    ctx.beginPath();ctx.arc(c,c,R*.8,0,Math.PI*2);ctx.strokeStyle="rgba(216,178,106,.18)";ctx.lineWidth=1*DPR;ctx.stroke()}
+
+  // pensando: satélites dorados
+  if(mix.t>.01){for(let j=0;j<3;j++){const a=t*2.4*sp+j*Math.PI*2/3;const r=R*.8;
+    const x=c+Math.cos(a)*r,y=c+Math.sin(a)*r;const gl=ctx.createRadialGradient(x,y,0,x,y,R*.06);
+    gl.addColorStop(0,`rgba(255,236,190,${mix.t})`);gl.addColorStop(1,"rgba(216,178,106,0)");ctx.fillStyle=gl;ctx.beginPath();ctx.arc(x,y,R*.06,0,Math.PI*2);ctx.fill()}}
+  ctx.globalCompositeOperation="source-over";
+  requestAnimationFrame(frame)}
+function lerp(a,b,k){return a+(b-a)*k}
+requestAnimationFrame(frame);
+
+/* =============== INTERFAZ =============== */
+const app=$("app"),log=$("log"),cap=$("caption");
+const STATES={idle:"En espera",listening:"Escuchando",thinking:"Pensando",speaking:"Respondiendo"};
+function setState(s){state=s;app.dataset.s=s;$("stateTxt").textContent=STATES[s];
+  cv.setAttribute("aria-label",s==="idle"?"Toca para hablar con Atlas":s==="listening"?"Toca para terminar":"Toca para interrumpir")}
+function hm(d){return d.toLocaleTimeString("es",{hour:"2-digit",minute:"2-digit"})}
+function tick(){const d=new Date();$("clock").textContent=hm(d);$("bigtime").textContent=hm(d);$("bigdate").textContent=d.toLocaleDateString("es",{weekday:"long",day:"numeric",month:"long"})}
+tick();setInterval(tick,10000);
+function addMsg(role,text,cls){$("empty").hidden=true;const m=document.createElement("div");m.className="msg "+(cls||role);
+  const w=document.createElement("div");w.className="who";w.textContent=role==="ai"?"Atlas":"Tú";const tm=document.createElement("time");tm.textContent=hm(new Date());w.append(tm);
+  const b=document.createElement("div");b.className="body";b.textContent=text;m.append(w,b);log.append(m);log.scrollTop=log.scrollHeight;
+  msgCount++;$("count").textContent=msgCount;return b}
+function capYou(text){cap.innerHTML="";if(text){const y=document.createElement("span");y.className="you";y.textContent="“"+text+"”";cap.append(y)}}
+function capAppend(chunk){const s=document.createElement("span");s.className="w";s.textContent=chunk;cap.append(s);cap.scrollTop=cap.scrollHeight}
+function capSet(text,cls){cap.innerHTML="";const s=document.createElement("span");s.className="w"+(cls?" "+cls:"");s.textContent=text;cap.append(s)}
+
+function paintConv(){$("conv").setAttribute("aria-pressed",convMode)}
 paintConv();
 $("conv").onclick=()=>{convMode=!convMode;store.set("atlas-conv",convMode?"1":"0");paintConv()};
-$("clear").onclick=()=>{stopAll();history=[];log.innerHTML="";add("ai","Conversación nueva, jefe. ¿De qué hablamos?")};
 
-/* ---------- Ajustes ---------- */
+// Panel
+function openLog(){$("panel").classList.add("on");$("scrim").classList.add("on");$("panel").setAttribute("aria-hidden","false");log.scrollTop=log.scrollHeight}
+function closeLog(){$("panel").classList.remove("on");$("scrim").classList.remove("on");$("panel").setAttribute("aria-hidden","true");$("input").blur()}
+$("openLog").onclick=openLog;$("closeLog").onclick=closeLog;$("scrim").onclick=closeLog;
+let ty=null;$("panel").addEventListener("touchstart",e=>{if(e.target.closest(".log,input,button"))return;ty=e.touches[0].clientY},{passive:true});
+$("panel").addEventListener("touchend",e=>{if(ty!==null&&e.changedTouches[0].clientY-ty>60)closeLog();ty=null});
+$("clear").onclick=()=>{stopAll();history=[];log.querySelectorAll(".msg").forEach(n=>n.remove());$("empty").hidden=false;msgCount=0;$("count").textContent="";capSet("Conversación nueva. ¿De qué hablamos, jefe?")};
+
+/* =============== AJUSTES =============== */
 function paintCfg(){const has=!!apiKey;$("hasKey").hidden=!has;$("noKey").hidden=has;$("rowHas").hidden=!has;$("rowNew").hidden=has;
-  $("keyMask").textContent=has?apiKey.slice(0,10)+"••••••"+apiKey.slice(-4):"";
-  $("meta").classList.toggle("warn",!has);if(!has&&state==="idle")$("state").textContent="Sin clave"}
+  $("keyMask").textContent=has?apiKey.slice(0,10)+"••••••"+apiKey.slice(-4):""}
 function openCfg(){paintCfg();$("cfgMsg").className="note";$("cfgMsg").innerHTML=apiKey?"Tu clave está guardada en este móvil.":'¿No tienes clave? Créala en <a href="https://platform.claude.com/settings/keys" target="_blank" rel="noopener">platform.claude.com</a>.';$("sheet").hidden=false}
 function closeCfg(){$("sheet").hidden=true;$("key").blur()}
 $("cfg").onclick=openCfg;$("closeCfg").onclick=closeCfg;$("done").onclick=closeCfg;
 $("sheet").addEventListener("click",e=>{if(e.target===$("sheet"))closeCfg()});
 $("saveKey").onclick=()=>{const k=$("key").value.trim().replace(/\s+/g,"");
   if(!k.startsWith("sk-")){$("cfgMsg").className="note bad";$("cfgMsg").textContent="Esa clave no parece válida. Debe empezar por sk-ant-.";return}
-  apiKey=k;store.set("atlas-key",k);$("key").value="";paintCfg();closeCfg();setState("idle");add("ai","Clave guardada, jefe. Toque el núcleo y hablemos.")};
+  apiKey=k;store.set("atlas-key",k);$("key").value="";paintCfg();closeCfg();capSet("Clave guardada, jefe. Toque el orbe y hablemos.")};
 let delArmed=false;
 $("delKey").onclick=()=>{if(!delArmed){delArmed=true;$("delKey").textContent="¿Seguro? Toca otra vez";setTimeout(()=>{delArmed=false;$("delKey").textContent="Cambiar clave"},3000);return}
   delArmed=false;$("delKey").textContent="Cambiar clave";apiKey="";store.del("atlas-key");paintCfg();$("cfgMsg").className="note";$("cfgMsg").textContent="Clave borrada. Pega la nueva clave."};
 
-/* ---------- Voz (salida) ---------- */
+/* =============== VOZ (salida) =============== */
 const TTS="speechSynthesis" in window;
 const FEM=/m[oó]nica|paulina|helena|laura|luc[ií]a|elvira|sabina|marisol|penelope|female|mujer|esperanza|isabela|francisca|soledad|ximena|elena|carmen|sof[ií]a/i;
 let voices=[];function loadVoices(){if(TTS)voices=speechSynthesis.getVoices().filter(v=>v.lang&&v.lang.toLowerCase().startsWith("es"))}
@@ -208,44 +309,49 @@ loadVoices();if(TTS)speechSynthesis.onvoiceschanged=loadVoices;
 function pickVoice(){return voices.find(v=>FEM.test(v.name)&&/es[-_]ES/i.test(v.lang))||voices.find(v=>FEM.test(v.name))||voices.find(v=>/google/i.test(v.name))||voices[0]||null}
 let pending=0,streamDone=true,spoken=0,speechGen=0;
 function sayChunk(t){if(!TTS||!t.trim())return;const gen=speechGen;const u=new SpeechSynthesisUtterance(t.trim());u.lang="es-ES";u.rate=1.05;u.pitch=1.1;
-  const v=pickVoice();if(v)u.voice=v;pending++;if(state!=="speaking")setState("speaking");
+  const v=pickVoice();if(v)u.voice=v;pending++;
+  u.onstart=()=>{if(gen===speechGen&&state!=="speaking")setState("speaking")};
+  u.onboundary=()=>kick(.75);
   u.onend=u.onerror=()=>{if(gen!==speechGen)return;pending=Math.max(0,pending-1);maybeDone()};speechSynthesis.speak(u)}
 function speakStream(full,done){const rest=full.slice(spoken);let cut=-1;
   for(const p of [". ","? ","! ",": ","\n"]){const i=rest.lastIndexOf(p);if(i>=0&&i+p.length>cut)cut=i+p.length}
   if(done)cut=rest.length;if(cut>0){sayChunk(rest.slice(0,cut));spoken+=cut}}
 function stopSpeaking(){speechGen++;if(TTS)speechSynthesis.cancel();pending=0}
-function maybeDone(){if(pending>0||!streamDone)return;if(state==="speaking"||state==="thinking")setState("idle");if(convMode)setTimeout(()=>{if(state==="idle")listen()},400)}
+function maybeDone(){if(pending>0||!streamDone)return;if(state==="speaking"||state==="thinking")setState("idle");if(convMode&&apiKey)setTimeout(()=>{if(state==="idle")listen()},450)}
 function stopAll(){abortCtl&&abortCtl.abort();try{rec&&rec.abort()}catch(e){}stopSpeaking();streamDone=true;setState("idle")}
 
-/* ---------- Micrófono (entrada) ---------- */
+/* =============== MICRÓFONO (entrada) =============== */
 const SR=window.SpeechRecognition||window.webkitSpeechRecognition;
-let rec=null,heard="";
+let rec=null,heard="",soundOn=false;
 function listen(){
-  if(!SR){add("ai","Este navegador no permite el micrófono. Abre ATLAS en Safari (iPhone) o Chrome (Android).","err");return}
+  if(!SR){capSet("Este navegador no permite el micrófono. Abre ATLAS en Safari (iPhone) o Chrome (Android).");return}
   if(!apiKey){openCfg();return}
-  stopSpeaking();heard="";
+  stopSpeaking();heard="";soundOn=false;
   rec=new SR();rec.lang="es-ES";rec.interimResults=true;rec.continuous=false;rec.maxAlternatives=1;
+  rec.onsoundstart=rec.onspeechstart=()=>{soundOn=true;kick(.6)};
+  rec.onsoundend=rec.onspeechend=()=>{soundOn=false};
   rec.onresult=e=>{let fin="",tmp="";for(const r of e.results){(r.isFinal?(fin+=r[0].transcript):(tmp+=r[0].transcript))}
-    heard=(fin+" "+tmp).trim();$("sub").textContent="“"+heard+"”"};
-  rec.onerror=e=>{if(e.error==="not-allowed"||e.error==="service-not-allowed")add("ai","No tengo permiso para el micrófono. En el iPhone: Ajustes › Safari › Micrófono › Permitir, y activa Dictado en Ajustes › General › Teclado.","err")};
-  rec.onend=()=>{rec=null;const t=heard.trim();if(t)ask(t);else if(state==="listening")setState("idle")};
-  try{rec.start();setState("listening")}catch(e){setState("idle")}
+    const nh=(fin+" "+tmp).trim();if(nh.length>heard.length)kick(.9);heard=nh;capYou(heard)};
+  rec.onerror=e=>{if(e.error==="not-allowed"||e.error==="service-not-allowed")capSet("No tengo permiso para el micrófono. En el iPhone: Ajustes › Safari › Micrófono › Permitir, y activa Dictado en Ajustes › General › Teclado.")};
+  rec.onend=()=>{rec=null;soundOn=false;const t=heard.trim();if(t)ask(t);else if(state==="listening"){setState("idle");if(!cap.textContent)capSet("No te he oído. Toca el orbe para intentarlo de nuevo.")}};
+  try{rec.start();setState("listening");capSet("")}catch(e){setState("idle")}
 }
-core.onclick=()=>{
+function orbTap(){
   if(state==="listening"){rec&&rec.stop();return}
   if(state==="speaking"){stopSpeaking();streamDone=true;setState("idle");listen();return}
-  if(state==="thinking"){stopAll();return}
-  if(TTS)speechSynthesis.speak(new SpeechSynthesisUtterance(" "));/* desbloquea la voz en iPhone */
-  listen();
-};
+  if(state==="thinking"){stopAll();capSet("Cancelado.");return}
+  if(TTS)speechSynthesis.speak(new SpeechSynthesisUtterance(" "));
+  kick(.5);listen()}
+cv.addEventListener("click",orbTap);
+cv.addEventListener("keydown",e=>{if(e.key==="Enter"||e.key===" "){e.preventDefault();orbTap()}});
 
-/* ---------- Cerebro (API de Claude) ---------- */
+/* =============== CEREBRO (API de Claude) =============== */
 async function ask(text){
   text=text.trim();if(!text)return;
   if(!apiKey){openCfg();return}
-  add("me",text);$("input").value="";$("input").blur();
+  addMsg("me",text);capYou(text);$("input").value="";
   history.push({role:"user",content:text});history=history.slice(-16);while(history.length&&history[0].role!=="user")history.shift();
-  setState("thinking");const out=add("ai","…");
+  setState("thinking");const out=addMsg("ai","…");
   stopSpeaking();spoken=0;streamDone=false;let full="";
   abortCtl=new AbortController();
   const now=new Date().toLocaleString("es",{dateStyle:"full",timeStyle:"short"});
@@ -260,24 +366,24 @@ async function ask(text){
     while(true){const {value,done}=await reader.read();if(done)break;buf+=dec.decode(value,{stream:true});
       let i;while((i=buf.indexOf("\n"))>=0){const line=buf.slice(0,i).trim();buf=buf.slice(i+1);
         if(!line.startsWith("data:"))continue;let ev;try{ev=JSON.parse(line.slice(5))}catch(e){continue}
-        if(ev.type==="content_block_delta"&&ev.delta&&ev.delta.type==="text_delta"){full+=ev.delta.text;out.textContent=full;log.scrollTop=log.scrollHeight;speakStream(full,false)}
+        if(ev.type==="content_block_delta"&&ev.delta&&ev.delta.type==="text_delta"){const d=ev.delta.text;full+=d;out.textContent=full;capAppend(d);kick(.4);speakStream(full,false)}
         if(ev.type==="error")throw new Error(ev.error?.message||"Error del servicio")}}
     history.push({role:"assistant",content:full||"…"});
     speakStream(full,true);streamDone=true;
-    if(!TTS||pending===0)maybeDone();
+    if(!TTS||pending===0){setState("idle");maybeDone()}
   }catch(e){
     history.pop();streamDone=true;
-    out.parentElement.classList.add("err");
-    out.textContent=e.name==="AbortError"?"Cancelado.":(e.message&&!/load failed|fetch/i.test(e.message)?e.message:"No pude conectar. Revisa tu conexión a internet.");
+    const msg=e.name==="AbortError"?"Cancelado.":(e.message&&!/load failed|fetch/i.test(e.message)?e.message:"No pude conectar. Revisa tu conexión a internet.");
+    out.parentElement.classList.add("err");out.textContent=msg;capSet(msg);
     stopSpeaking();setState("idle");
   }
 }
-$("form").addEventListener("submit",e=>{e.preventDefault();const t=$("input").value;if(TTS)speechSynthesis.speak(new SpeechSynthesisUtterance(" "));ask(t)});
+$("form").addEventListener("submit",e=>{e.preventDefault();const t=$("input").value;if(TTS)speechSynthesis.speak(new SpeechSynthesisUtterance(" "));closeLog();ask(t)});
 
-/* ---------- Inicio ---------- */
-setState("idle");paintCfg();
+/* =============== INICIO =============== */
+setState("idle");
 (function greet(){const h=new Date().getHours();const s=h<6?"Trabajando hasta tarde, jefe.":h<12?"Buenos días, jefe.":h<20?"Buenas tardes, jefe.":"Buenas noches, jefe.";
-  add("ai",s+(apiKey?" Toque el núcleo y hablemos.":" Antes de empezar, necesito mi clave. Toque el engranaje para configurarla."))})();
+  capSet(s+(apiKey?" Toque el orbe cuando quiera hablar.":" Antes de empezar necesito mi clave: toque Ajustes, arriba a la derecha."))})();
 if(!apiKey)openCfg();
 </script>
 </body>
