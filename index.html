@@ -1,0 +1,227 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#070b12">
+<title>ATLAS</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@500;700&family=IBM+Plex+Sans:wght@400;500&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+:root{
+  --void:#070b12; --panel:#0e1521; --line:#1d2a3c; --ink:#dbe6f2; --dim:#7c8ea5;
+  --core:#4fd6e8; --ember:#f2a65a; --rose:#ff7a9a;
+  --f-display:"Chakra Petch","Segoe UI",system-ui,sans-serif;
+  --f-body:"IBM Plex Sans",system-ui,-apple-system,sans-serif;
+  --f-mono:"IBM Plex Mono",ui-monospace,Menlo,monospace;
+  color-scheme:dark;
+}
+*{box-sizing:border-box}
+html,body{height:100%;margin:0}
+body{background:var(--void);color:var(--ink);font-family:var(--f-body);font-size:15px;line-height:1.5;
+  background-image:radial-gradient(ellipse 80% 40% at 50% 0%,rgba(79,214,232,.08),transparent 70%);
+  padding-top:env(safe-area-inset-top,0px)}
+.app{height:100%;display:flex;flex-direction:column;max-width:720px;margin:0 auto;
+  padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+.status{display:flex;justify-content:space-between;align-items:center;gap:12px;padding-block:14px 6px;
+  font-family:var(--f-mono);font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:var(--dim)}
+.status b{color:var(--core);font-weight:500}
+.top{display:flex;align-items:center;gap:10px}
+.top h1{font-family:var(--f-display);font-weight:700;font-size:24px;letter-spacing:.2em;margin:0;line-height:1}
+.ghost{margin-left:auto;font-family:var(--f-mono);font-size:11px;letter-spacing:.08em;text-transform:uppercase;
+  background:transparent;color:var(--dim);border:1px solid var(--line);border-radius:4px;padding:8px 10px;cursor:pointer}
+.ghost[aria-pressed="true"]{color:var(--core);border-color:var(--core)}
+.ghost+.ghost{margin-left:0}
+
+/* Núcleo = botón de micrófono */
+.stage{display:flex;flex-direction:column;align-items:center;gap:10px;padding-block:14px 10px;border-bottom:1px solid var(--line)}
+.core{position:relative;width:150px;height:150px;border:none;background:transparent;padding:0;cursor:pointer;border-radius:50%;--c:var(--core)}
+.core span{position:absolute;border-radius:50%;pointer-events:none}
+.core .r1{inset:0;border:1.5px dashed var(--c);opacity:.45;animation:spin 18s linear infinite}
+.core .r2{inset:16px;border:2px solid;border-color:transparent var(--c) transparent var(--c);animation:spin 6s linear infinite reverse}
+.core .r3{inset:44px;background:radial-gradient(circle,#effcff 0%,var(--c) 45%,transparent 75%);animation:pulse 3.2s ease-in-out infinite}
+.core .mic{inset:auto;left:50%;top:50%;width:26px;height:26px;transform:translate(-50%,-50%);border-radius:0}
+.core .mic svg{width:100%;height:100%;display:block}
+.core[data-s="listening"]{--c:var(--rose)}
+.core[data-s="listening"] .r3{animation-duration:.8s}
+.core[data-s="listening"] .r2{animation-duration:1.4s}
+.core[data-s="thinking"]{--c:var(--ember)}
+.core[data-s="thinking"] .r2{animation-duration:1s}
+.core[data-s="speaking"] .r3{animation-duration:.6s}
+@keyframes spin{to{transform:rotate(360deg)}}
+@keyframes pulse{50%{transform:scale(.8);opacity:.7}}
+.label{font-family:var(--f-mono);font-size:12px;letter-spacing:.14em;text-transform:uppercase;color:var(--dim);min-height:18px;text-align:center}
+.caption{min-height:22px;font-size:14px;color:var(--ink);opacity:.8;text-align:center;max-width:36ch}
+
+.log{flex:1;overflow-y:auto;display:flex;flex-direction:column;gap:14px;padding-block:16px;min-height:0}
+.msg{max-width:88%;min-width:0;overflow-wrap:anywhere}
+.msg .who{font-family:var(--f-mono);font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:var(--dim);margin-bottom:4px}
+.msg.ai .who{color:var(--core)}
+.msg.ai .body{border-left:2px solid var(--core);padding:2px 0 2px 12px;white-space:pre-wrap}
+.msg.me{align-self:flex-end}
+.msg.me .who{text-align:right}
+.msg.me .body{background:var(--panel);border:1px solid var(--line);border-radius:10px 10px 2px 10px;padding:9px 13px;white-space:pre-wrap}
+.msg.err .body{border-left-color:var(--ember);color:var(--ember)}
+form{display:flex;gap:8px;padding-block:6px max(14px,env(safe-area-inset-bottom,0px))}
+input[type=text],input[type=password]{flex:1;min-width:0;font:inherit;color:var(--ink);background:var(--panel);border:1px solid var(--line);border-radius:8px;padding:11px 13px}
+input:focus{outline:none;border-color:var(--core)}
+.send{flex:none;padding:0 16px;border:none;border-radius:8px;background:var(--core);color:var(--void);font-family:var(--f-display);font-weight:700;font-size:13px;letter-spacing:.06em;cursor:pointer}
+button:focus-visible,input:focus-visible{outline:2px solid var(--ember);outline-offset:2px}
+
+/* Ajustes */
+.sheet{position:fixed;inset:0;background:rgba(3,6,10,.86);display:flex;align-items:center;justify-content:center;z-index:20;
+  padding:max(16px,env(safe-area-inset-top,0px)) max(16px,env(safe-area-inset-right,0px)) max(16px,env(safe-area-inset-bottom,0px)) max(16px,env(safe-area-inset-left,0px))}
+.card{width:100%;max-width:440px;background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:20px;display:flex;flex-direction:column;gap:12px}
+.card h2{font-family:var(--f-display);font-size:20px;letter-spacing:.08em;margin:0}
+.card p{margin:0;color:var(--dim);font-size:13.5px}
+.card .row{display:flex;gap:8px;flex-wrap:wrap}
+.card a{color:var(--core)}
+@media (prefers-reduced-motion:reduce){.core span{animation:none!important}}
+</style>
+</head>
+<body>
+<div class="app">
+  <div class="status"><span id="clock">--</span><span>Estado: <b id="state">En línea</b></span></div>
+  <div class="top">
+    <h1>ATLAS</h1>
+    <button class="ghost" id="conv" type="button" aria-pressed="true" title="Volver a escuchar sola después de responder">Charla: on</button>
+    <button class="ghost" id="cfg" type="button">Ajustes</button>
+  </div>
+  <section class="stage">
+    <button class="core" id="core" type="button" data-s="idle" aria-label="Pulsa para hablar">
+      <span class="r1"></span><span class="r2"></span><span class="r3"></span>
+      <span class="mic"><svg viewBox="0 0 24 24" fill="none" stroke="#070b12" stroke-width="2.2" stroke-linecap="round"><rect x="9" y="3" width="6" height="11" rx="3" fill="#070b12"/><path d="M5.5 11a6.5 6.5 0 0 0 13 0M12 17.5V21"/></svg></span>
+    </button>
+    <div class="label" id="label">Toca el núcleo para hablar</div>
+    <div class="caption" id="caption"></div>
+  </section>
+  <main class="log" id="log" aria-live="polite"></main>
+  <form id="form">
+    <input type="text" id="input" placeholder="O escribe aquí…" aria-label="Mensaje para Atlas" autocomplete="off">
+    <button class="send" type="submit">IR</button>
+  </form>
+</div>
+
+<div class="sheet" id="sheet" hidden>
+  <div class="card">
+    <h2>Configurar ATLAS</h2>
+    <p>Pega aquí tu clave de API de Anthropic. Se guarda solo en este móvil y nunca se incluye en el código de la app.</p>
+    <input type="password" id="key" placeholder="sk-ant-..." autocomplete="off" aria-label="Clave de API">
+    <div class="row">
+      <button class="send" id="saveKey" type="button">Guardar</button>
+      <button class="ghost" id="delKey" type="button">Borrar clave</button>
+      <button class="ghost" id="closeCfg" type="button">Cerrar</button>
+    </div>
+    <p id="cfgMsg">Consíguela en <a href="https://platform.claude.com/settings/keys" target="_blank" rel="noopener">platform.claude.com</a>.</p>
+  </div>
+</div>
+
+<script>
+const $=id=>document.getElementById(id);
+const MODEL="claude-haiku-5-5";
+const SYSTEM=`Eres ATLAS, una asistente personal de IA (en femenino) con personalidad cálida, elegante, leal y con un toque de humor sutil. Hablas siempre en español, de forma conversacional y natural, como en una llamada: frases cortas, máximo 3-4 frases salvo que te pidan más. Te diriges al usuario como "jefe" con naturalidad, sin exagerar. A menudo terminas con una pregunta breve para que la conversación fluya. Nunca uses markdown, listas, asteriscos ni emojis: todo se leerá en voz alta.`;
+const store={get:k=>{try{return localStorage.getItem(k)}catch(e){return null}},set:(k,v)=>{try{localStorage.setItem(k,v)}catch(e){}},del:k=>{try{localStorage.removeItem(k)}catch(e){}}};
+
+let apiKey=store.get("atlas-key")||"";
+let convMode=store.get("atlas-conv")!=="0";
+let history=[];let state="idle";let abortCtl=null;
+
+/* ---------- UI ---------- */
+const core=$("core"),log=$("log");
+const LABELS={idle:"Toca el núcleo para hablar",listening:"Te escucho…",thinking:"Pensando…",speaking:"Hablando · toca para interrumpir"};
+const STATES={idle:"En línea",listening:"Escuchando",thinking:"Procesando",speaking:"Hablando"};
+function setState(s){state=s;core.dataset.s=s;$("label").textContent=LABELS[s];$("state").textContent=STATES[s]}
+function add(role,text,cls){const m=document.createElement("div");m.className="msg "+(cls||role);
+  const w=document.createElement("div");w.className="who";w.textContent=role==="ai"?"Atlas":"Tú";
+  const b=document.createElement("div");b.className="body";b.textContent=text;m.append(w,b);log.append(m);log.scrollTop=log.scrollHeight;return b}
+function tick(){const d=new Date();$("clock").textContent=d.toLocaleDateString("es",{weekday:"short",day:"numeric",month:"short"})+" · "+d.toLocaleTimeString("es",{hour:"2-digit",minute:"2-digit"})}
+tick();setInterval(tick,15000);
+function paintConv(){$("conv").setAttribute("aria-pressed",convMode);$("conv").textContent="Charla: "+(convMode?"on":"off")}
+paintConv();
+$("conv").onclick=()=>{convMode=!convMode;store.set("atlas-conv",convMode?"1":"0");paintConv()};
+
+/* ---------- Ajustes ---------- */
+function openCfg(){$("key").value=apiKey;$("sheet").hidden=false}
+$("cfg").onclick=openCfg;$("closeCfg").onclick=()=>$("sheet").hidden=true;
+$("saveKey").onclick=()=>{const k=$("key").value.trim();if(!k.startsWith("sk-")){$("cfgMsg").textContent="Esa clave no parece válida. Debe empezar por sk-ant-.";return}
+  apiKey=k;store.set("atlas-key",k);$("sheet").hidden=true;add("ai","Clave guardada, jefe. Toque el núcleo y hablemos.")};
+$("delKey").onclick=()=>{apiKey="";store.del("atlas-key");$("key").value="";$("cfgMsg").textContent="Clave borrada de este móvil."};
+
+/* ---------- Voz (salida) ---------- */
+const TTS="speechSynthesis" in window;
+const FEM=/m[oó]nica|paulina|helena|laura|luc[ií]a|elvira|sabina|marisol|penelope|female|mujer|esperanza|isabela|francisca|soledad|ximena|elena|carmen|sof[ií]a/i;
+let voices=[];function loadVoices(){if(TTS)voices=speechSynthesis.getVoices().filter(v=>v.lang&&v.lang.toLowerCase().startsWith("es"))}
+loadVoices();if(TTS)speechSynthesis.onvoiceschanged=loadVoices;
+function pickVoice(){return voices.find(v=>FEM.test(v.name))||voices.find(v=>/google/i.test(v.name))||voices[0]||null}
+let pending=0,streamDone=false,spoken=0;
+function sayChunk(t){if(!TTS||!t.trim())return;const u=new SpeechSynthesisUtterance(t.trim());u.lang="es-ES";u.rate=1.05;u.pitch=1.1;
+  const v=pickVoice();if(v)u.voice=v;pending++;if(state!=="speaking")setState("speaking");
+  u.onend=u.onerror=()=>{pending--;maybeDone()};speechSynthesis.speak(u)}
+function speakStream(full,done){const rest=full.slice(spoken);
+  let cut=-1;for(const p of [". ","? ","! ","¿",": "]){const i=rest.lastIndexOf(p);if(i>cut&&p!=="¿")cut=i+p.length}
+  if(done)cut=rest.length;if(cut>0){sayChunk(rest.slice(0,cut));spoken+=cut}}
+function stopSpeaking(){if(TTS)speechSynthesis.cancel();pending=0}
+function maybeDone(){if(pending>0||!streamDone)return;setState("idle");if(convMode)setTimeout(()=>{if(state==="idle")listen()},350)}
+
+/* ---------- Micrófono (entrada) ---------- */
+const SR=window.SpeechRecognition||window.webkitSpeechRecognition;
+let rec=null,heard="";
+function listen(){
+  if(!SR){add("ai","Este navegador no permite el micrófono. Abre ATLAS en Chrome (Android) o Safari (iPhone).","err");return}
+  if(!apiKey){openCfg();return}
+  stopSpeaking();heard="";$("caption").textContent="";
+  rec=new SR();rec.lang="es-ES";rec.interimResults=true;rec.continuous=false;rec.maxAlternatives=1;
+  rec.onresult=e=>{let fin="",tmp="";for(const r of e.results){(r.isFinal?(fin+=r[0].transcript):(tmp+=r[0].transcript))}
+    heard=fin||tmp;$("caption").textContent=heard};
+  rec.onerror=e=>{if(e.error==="not-allowed"||e.error==="service-not-allowed")add("ai","No tengo permiso para usar el micrófono. Actívalo en los permisos del navegador para esta página.","err")};
+  rec.onend=()=>{rec=null;const t=heard.trim();$("caption").textContent="";if(t)ask(t);else if(state==="listening")setState("idle")};
+  try{rec.start();setState("listening")}catch(e){setState("idle")}
+}
+core.onclick=()=>{
+  if(state==="listening"){rec&&rec.stop();return}
+  if(state==="speaking"){stopSpeaking();streamDone=true;listen();return}
+  if(state==="thinking"){abortCtl&&abortCtl.abort();return}
+  if(TTS)speechSynthesis.speak(new SpeechSynthesisUtterance(""));/* desbloquea la voz en iPhone */
+  listen();
+};
+
+/* ---------- Cerebro (API de Claude) ---------- */
+async function ask(text){
+  text=text.trim();if(!text)return;
+  if(!apiKey){openCfg();return}
+  add("me",text);$("input").value="";
+  history.push({role:"user",content:text});history=history.slice(-16);while(history.length&&history[0].role!=="user")history.shift();
+  setState("thinking");const out=add("ai","…");
+  stopSpeaking();spoken=0;streamDone=false;let full="";
+  abortCtl=new AbortController();
+  const now=new Date().toLocaleString("es",{dateStyle:"full",timeStyle:"short"});
+  try{
+    const body=JSON.stringify({model:MODEL,max_tokens:500,stream:true,system:SYSTEM+"\nFecha y hora actual: "+now+".",messages:history});
+    const base={"content-type":"application/json","anthropic-version":"2023-06-01","anthropic-dangerous-direct-browser-access":"true"};
+    let res=await fetch("https://api.anthropic.com/v1/messages",{method:"POST",signal:abortCtl.signal,headers:{...base,"x-api-key":apiKey},body});
+    if(res.status===401)res=await fetch("https://api.anthropic.com/v1/messages",{method:"POST",signal:abortCtl.signal,headers:{...base,"authorization":"Bearer "+apiKey},body});
+    if(!res.ok){let msg="";try{msg=(await res.json()).error?.message||""}catch(e){}
+      throw new Error(res.status===401?"La clave de API no es válida. Revísala en Ajustes.":res.status===429?"Demasiadas peticiones seguidas. Espera unos segundos.":res.status===400&&/credit/i.test(msg)?"Tu cuenta no tiene crédito. Recarga saldo en platform.claude.com.":"Error "+res.status+": "+msg)}
+    const reader=res.body.getReader();const dec=new TextDecoder();let buf="";
+    while(true){const {value,done}=await reader.read();if(done)break;buf+=dec.decode(value,{stream:true});
+      let i;while((i=buf.indexOf("\n"))>=0){const line=buf.slice(0,i).trim();buf=buf.slice(i+1);
+        if(!line.startsWith("data:"))continue;let ev;try{ev=JSON.parse(line.slice(5))}catch(e){continue}
+        if(ev.type==="content_block_delta"&&ev.delta&&ev.delta.type==="text_delta"){full+=ev.delta.text;out.textContent=full;log.scrollTop=log.scrollHeight;speakStream(full,false)}}}
+    history.push({role:"assistant",content:full||"…"});
+    speakStream(full,true);streamDone=true;maybeDone();
+  }catch(e){
+    history.pop();streamDone=true;
+    out.parentElement.classList.add("err");
+    out.textContent=e.name==="AbortError"?"Cancelado.":(e.message&&!/fetch/i.test(e.message)?e.message:"No pude conectar. Revisa tu conexión a internet.");
+    stopSpeaking();setState("idle");
+  }
+}
+$("form").addEventListener("submit",e=>{e.preventDefault();const t=$("input").value;if(TTS)speechSynthesis.speak(new SpeechSynthesisUtterance(""));ask(t)});
+
+/* ---------- Inicio ---------- */
+(function greet(){const h=new Date().getHours();const s=h<6?"Trabajando hasta tarde, jefe.":h<12?"Buenos días, jefe.":h<20?"Buenas tardes, jefe.":"Buenas noches, jefe.";
+  add("ai",s+(apiKey?" Toque el núcleo y hablemos.":" Antes de empezar, necesito mi clave de API. Toque Ajustes para configurarla."))})();
+if(!apiKey)openCfg();
+</script>
+</body>
+</html>
